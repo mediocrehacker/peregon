@@ -1,1 +1,1 @@
-# peregon\n\n
+# Peregon
