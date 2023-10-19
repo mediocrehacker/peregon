@@ -2,19 +2,14 @@ module Server where
 
 import Data.Aeson
 import Data.Env (Env)
+import Data.Conversion.Params qualified as CP
 import Servant
-
 
 type API =
   "api" :> "v1"
     :> ( "healthcheck" :> Get '[JSON] Healthcheck
-    -- :<|> ReqBody '[JSON] ConversionReq :> Post '[JSON] ConversionReq
+           :<|> "conversion" :> ReqBody '[JSON] CP.Params:> Post '[JSON] CP.Params 
        )
-
-newtype ConversionReq = ConversionReq
-  {name :: Text}
-  deriving newtype (Eq, Show)
-  deriving stock (Generic)
 
 newtype Healthcheck = Healthcheck
   {status :: Text}
@@ -28,14 +23,23 @@ healthcheckUp =
   Healthcheck "UP"
 
 server :: ServerT API AppM
-server = return healthcheckUp
+server =
+  getHealthcheck
+    :<|> postConversion
+
+getHealthcheck :: AppM Healthcheck
+getHealthcheck =
+  return healthcheckUp
+
+postConversion :: CP.Params -> AppM CP.Params
+postConversion _ =
+  return (CP.Params "name" "tex" "class" "customization")
 
 api :: Proxy API
 api = Proxy
 
 runApp :: Env -> Application
 runApp env = serve api $ hoistServer api (nt env) server
-
 
 type AppM =
   ReaderT Env Handler
