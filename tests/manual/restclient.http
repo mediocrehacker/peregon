@@ -1,0 +1,18 @@
+# -*- restclient -*-
+
+#
+# Convert to pdf
+#
+
+GET http://localhost:8081/api/v1/healthcheck
+
+#
+# Convert to pdf
+#
+POST http://localhost:9999/api/v1/conversion
+Content-Type: application/json
+{ "name": "Worksheet"
+, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/ezhednevnik-aktivnosti-po-chasam/worksheet.tex"
+, "class_file": "https://github.com/mediocrehacker/mentaldesk/blob/main/src/app/content/shared/worksheet.cls"
+, "customization": "{}"
+}
