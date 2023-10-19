@@ -81,11 +81,16 @@ common shared
     , data-default
     , directory
     , filepath
+    , http-client
+    , http-client-tls
     , mtl
+    , network
     , optics-core
     , profunctors
     , relude        >=1.0
+    , servant
     , servant-server
+    , servant-client
     , shower
     , time
     , wai

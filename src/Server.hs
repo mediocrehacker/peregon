@@ -4,6 +4,7 @@ import Data.Aeson
 import Data.Env (Env)
 import Data.Conversion.Params qualified as CP
 import Servant
+import Query qualified as Query
 
 type API =
   "api" :> "v1"
@@ -32,7 +33,9 @@ getHealthcheck =
   return healthcheckUp
 
 postConversion :: CP.Params -> AppM CP.Params
-postConversion _ =
+postConversion params = do
+  name <- liftIO $ Query.get $ CP.tex_file params
+  _ <- putStrLn $ show name
   return (CP.Params "name" "tex" "class" "customization")
 
 api :: Proxy API
@@ -46,3 +49,4 @@ type AppM =
 
 nt :: Env -> AppM a -> Handler a
 nt s x = runReaderT x s
+
