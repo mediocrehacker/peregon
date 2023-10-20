@@ -16,7 +16,22 @@
         inputs.haskell-flake.flakeModule
         inputs.treefmt-nix.flakeModule
       ];
-      perSystem = { self', system, lib, config, pkgs, ... }: {
+
+      perSystem = { self', system, lib, config, pkgs, ... }:
+      let
+        tex = (pkgs.texlive.combine {
+          inherit (pkgs.texlive) scheme-full babel xetex setspace fontspec
+                                 chktex enumitem xifthen ifmtarg filehook
+                                 upquote tools ms geometry graphics oberdiek
+                                 fancyhdr lastpage xcolor etoolbox unicode-math
+                                 ucharcat sourcesanspro tcolorbox pgf environ
+                                 trimspaces parskip hyperref url euenc
+                                 collection-fontsrecommended ragged2e
+                                 framed paralist titlesec paratype inter;
+          }
+        );
+      in
+        {
         # Our only Haskell project. You can have multiple projects, but this template
         # has only one.
         # See https://github.com/srid/haskell-flake/blob/master/example/flake.nix
@@ -89,6 +104,7 @@
             config.treefmt.build.devShell
           ];
           nativeBuildInputs = with pkgs; [
+            tex
             just
           ];
         };
