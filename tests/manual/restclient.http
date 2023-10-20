@@ -16,3 +16,9 @@ Content-Type: application/json
 , "class_file": "https://github.com/mediocrehacker/mentaldesk/blob/main/src/app/content/shared/worksheet.cls"
 , "customization": "{}"
 }
+
+#
+# Convert to pdf
+#
+
+GET http://localhost:8081/api/v1/static/5fea29a1a384d363c27f18895a0fae69e07142ce700d6a50a1de83aa02eaa0b2.pdf

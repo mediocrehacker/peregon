@@ -78,6 +78,7 @@ common shared
     , aeson
     , async
     , base          >=4.13.0.0 && <4.18.0.0.0
+    , base16-bytestring
     , data-default
     , directory
     , filepath
@@ -92,6 +93,7 @@ common shared
     , servant
     , servant-server
     , servant-client
+    , cryptohash-sha256 
     , shower
     , time
     , wai

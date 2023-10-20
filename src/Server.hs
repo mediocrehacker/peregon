@@ -1,18 +1,24 @@
 module Server where
 
 import Data.Aeson
+import Data.ByteString qualified as BS
 import Data.Text qualified as T
 import Data.Env (Env)
 import Data.Conversion.Params qualified as CP
+import Data.Conversion.Response qualified as CR
 import Servant
 import Query qualified as Query
-import System.Process
+import System.Process qualified as Process
+import Crypto.Hash.SHA256 qualified as SHA256
+import Data.ByteString.Base16 qualified as Base16
 
 type API =
   "api" :> "v1"
     :> ( "healthcheck" :> Get '[JSON] Healthcheck
-           :<|> "conversion" :> ReqBody '[JSON] CP.Params:> Post '[JSON] (Response CP.Params)
+           :<|> "conversion" :> ReqBody '[JSON] CP.Params:> Post '[JSON] (Response CR.Response)
        )
+
+type StaticAPI = "api" :> "v1" :> "static" :> Raw
 
 newtype Healthcheck = Healthcheck
   {status :: Text}
@@ -26,43 +32,71 @@ data Response a
   | RespFailure Text
   deriving stock (Generic, Show)
 
-instance ToJSON (Response CP.Params)
+instance ToJSON (Response CR.Response)
   
 
 healthcheckUp :: Healthcheck
 healthcheckUp =
   Healthcheck "UP"
 
-server :: ServerT API AppM
-server =
-  getHealthcheck
-    :<|> postConversion
-
 getHealthcheck :: AppM Healthcheck
 getHealthcheck =
   return healthcheckUp
 
-postConversion :: CP.Params -> AppM (Response CP.Params)
+postConversion :: CP.Params -> AppM (Response CR.Response)
 postConversion params = do
   resp <- liftIO $ Query.get $ CP.tex_file params
   case resp of
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
-      result <- liftIO $ conversion tex
-      return (RespSuccess (CP.Params "name" result "class" "customization"))
+      fileName <- liftIO $ conversion (encodeUtf8 tex)
+      return (RespSuccess (CR.Response fileName))
 
-conversion :: Text -> IO Text
+
+conversion :: ByteString -> IO (Text)
 conversion tex = do
-  _ <- writeFile "tmp/worksheet.tex" (toString tex)
-  -- r <- createProcess (proc "pdflatex tmp/worksheet.tex [])
-  return tex
+  _ <- writeFileBS filePath tex 
+  _ <- Process.spawnProcess "pdflatex" ["-output-directory=./static/", filePath]
+  return (T.pack fileName)
+  where
+    hash :: BS.ByteString 
+    hash =
+      Base16.encode $ SHA256.hash tex
+
+    hash' :: String
+    hash' = T.unpack $ decodeUtf8 hash
+
+    fileName :: String
+    fileName = 
+          hash' ++ ".pdf" 
+
+    filePath :: String
+    filePath = 
+          "tmp/" ++ fileName 
+
 
 api :: Proxy API
-api = Proxy
+api = Proxy 
+
+staticAPI :: Proxy StaticAPI
+staticAPI = Proxy
+
+staticApp :: Server Raw
+staticApp =
+ serveDirectoryWebApp "static" 
+
+server :: ServerT API AppM
+server =
+  getHealthcheck
+    :<|> postConversion
+  
+allApi :: Proxy (API :<|> StaticAPI)
+allApi = Proxy
 
 runApp :: Env -> Application
-runApp env' = serve api $ hoistServer api (nt env') server
+runApp env' = serve allApi
+  (hoistServer api (nt env') server :<|> staticApp)
 
 type AppM =
   ReaderT Env Handler

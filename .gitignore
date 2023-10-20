@@ -14,3 +14,6 @@ result-*
 # latex
 *.aux
 *.log
+
+# tmp
+tmp/*
