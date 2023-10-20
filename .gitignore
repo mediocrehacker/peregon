@@ -10,3 +10,7 @@ result-*
 
 # direnv
 .direnv
+
+# latex
+*.aux
+*.log
