@@ -6,6 +6,7 @@ import Data.Env (Env)
 import Data.Conversion.Params qualified as CP
 import Servant
 import Query qualified as Query
+import System.Process
 
 type API =
   "api" :> "v1"
@@ -48,13 +49,20 @@ postConversion params = do
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
-      return (RespSuccess (CP.Params "name" tex "class" "customization"))
+      result <- liftIO $ conversion tex
+      return (RespSuccess (CP.Params "name" result "class" "customization"))
+
+conversion :: Text -> IO Text
+conversion tex = do
+  _ <- writeFile "tmp/worksheet.tex" (toString tex)
+  -- r <- createProcess (proc "pdflatex tmp/worksheet.tex [])
+  return tex
 
 api :: Proxy API
 api = Proxy
 
 runApp :: Env -> Application
-runApp env = serve api $ hoistServer api (nt env) server
+runApp env' = serve api $ hoistServer api (nt env') server
 
 type AppM =
   ReaderT Env Handler

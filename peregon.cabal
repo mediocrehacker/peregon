@@ -86,6 +86,7 @@ common shared
     , mtl
     , network
     , optics-core
+    , process
     , profunctors
     , relude        >=1.0
     , servant
