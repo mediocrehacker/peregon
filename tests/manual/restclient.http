@@ -12,8 +12,7 @@ GET http://localhost:8081/api/v1/healthcheck
 POST http://localhost:8081/api/v1/conversion
 Content-Type: application/json
 { "name": "Worksheet"
-, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/ezhednevnik-aktivnosti-po-chasam/worksheet.tex"
-, "class_file": "https://github.com/mediocrehacker/mentaldesk/blob/main/src/app/content/shared/worksheet.cls"
+, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/bolevoj-dnevnik/worksheet.tex"
 , "customization": "{}"
 }
 

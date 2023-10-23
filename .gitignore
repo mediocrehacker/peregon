@@ -16,4 +16,4 @@ result-*
 *.log
 
 # tmp
-tmp/*
+tmp/*.tex

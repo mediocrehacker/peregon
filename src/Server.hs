@@ -45,8 +45,8 @@ getHealthcheck =
 
 postConversion :: CP.Params -> AppM (Response CR.Response)
 postConversion params = do
-  resp <- liftIO $ Query.get $ CP.tex_file params
-  case resp of
+  texResp <- liftIO $ Query.get $ CP.tex_file params
+  case texResp of
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
@@ -69,7 +69,7 @@ conversion tex = do
 
     fileName :: String
     fileName = 
-          hash' ++ ".pdf" 
+          hash' ++ ".tex"
 
     filePath :: String
     filePath = 
