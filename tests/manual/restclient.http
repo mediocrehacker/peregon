@@ -12,8 +12,14 @@ GET http://localhost:8081/api/v1/healthcheck
 POST http://localhost:8081/api/v1/conversion
 Content-Type: application/json
 { "name": "Worksheet"
-, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/bolevoj-dnevnik/worksheet.tex"
-, "customization": "{}"
+, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
+, "customization":
+  { "clinicName": "Название Вашей Клиники",
+    "therapist": "Фамилия Имя Специалиста",
+    "email": "email@mail.ru",
+    "phone": "+7-999-333-22-11",
+    "client": "Фамилия Имя Клиента"
+  }
 }
 
 #

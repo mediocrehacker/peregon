@@ -1,21 +1,22 @@
 module Server where
 
-import Data.Aeson
-import Data.ByteString qualified as BS
-import Data.Text qualified as T
-import Data.Env (Env)
-import Data.Conversion.Params qualified as CP
-import Data.Conversion.Response qualified as CR
+import qualified Crypto.Hash.SHA256 as SHA256
+import Data.Aeson 
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base16 as Base16
+import qualified Data.Conversion.Params as CP
+import qualified Data.Conversion.Response as CR
+import qualified Data.Env as Env
+import qualified Data.Text as T
+import qualified Query as Query
+import Relude.Extra.Map (toPairs)
 import Servant
-import Query qualified as Query
-import System.Process qualified as Process
-import Crypto.Hash.SHA256 qualified as SHA256
-import Data.ByteString.Base16 qualified as Base16
+import qualified System.Process as Process
 
 type API =
   "api" :> "v1"
     :> ( "healthcheck" :> Get '[JSON] Healthcheck
-           :<|> "conversion" :> ReqBody '[JSON] CP.Params:> Post '[JSON] (Response CR.Response)
+           :<|> "conversion" :> ReqBody '[JSON] CP.Params :> Post '[JSON] (Response CR.Response)
        )
 
 type StaticAPI = "api" :> "v1" :> "static" :> Raw
@@ -33,7 +34,6 @@ data Response a
   deriving stock (Generic, Show)
 
 instance ToJSON (Response CR.Response)
-  
 
 healthcheckUp :: Healthcheck
 healthcheckUp =
@@ -50,57 +50,67 @@ postConversion params = do
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
-      fileName <- liftIO $ conversion (encodeUtf8 tex)
+      fileName <- liftIO $ conversion tex $ CP.customization params
       return (RespSuccess (CR.Response fileName))
 
+conversion :: Text -> Maybe (HashMap Text Text) -> IO (Text)
+conversion tex =
+  pdfLatex . encodeUtf8 . foldr convert tex . fromMaybe [] . fmap toPairs
 
-conversion :: ByteString -> IO (Text)
-conversion tex = do
-  _ <- writeFileBS filePath tex 
+pdfLatex :: ByteString-> IO (Text)
+pdfLatex tex = do
+  _ <- writeFileBS filePath tex
   _ <- Process.spawnProcess "pdflatex" ["-output-directory=./static/", filePath]
   return (T.pack fileName)
   where
-    hash :: BS.ByteString 
+    hash :: BS.ByteString
     hash =
       Base16.encode $ SHA256.hash tex
 
-    hash' :: String
-    hash' = T.unpack $ decodeUtf8 hash
-
     fileName :: String
-    fileName = 
-          hash' ++ ".tex"
+    fileName =
+      (T.unpack $ decodeUtf8 hash) ++ ".tex"
 
     filePath :: String
-    filePath = 
-          "tmp/" ++ fileName 
+    filePath =
+      "tmp/" ++ fileName
 
+convert :: (Text, Text) -> Text -> Text
+convert (key, value) =
+  T.replace key_ value
+  where
+    key_ = T.append (T.append "((" key) "))"
 
 api :: Proxy API
-api = Proxy 
+api = Proxy
 
 staticAPI :: Proxy StaticAPI
 staticAPI = Proxy
 
 staticApp :: Server Raw
 staticApp =
- serveDirectoryWebApp "static" 
+  serveDirectoryWebApp "static"
 
 server :: ServerT API AppM
 server =
   getHealthcheck
     :<|> postConversion
-  
+
 allApi :: Proxy (API :<|> StaticAPI)
 allApi = Proxy
 
-runApp :: Env -> Application
-runApp env' = serve allApi
-  (hoistServer api (nt env') server :<|> staticApp)
+initEnv :: Text -> Env.Env
+initEnv =
+  Env.init
+
+runApp :: Env.Env -> Application
+runApp env' =
+  serve
+    allApi
+    (hoistServer api (nt env') server :<|> staticApp)
 
 type AppM =
-  ReaderT Env Handler
+  ReaderT Env.Env Handler
 
-nt :: Env -> AppM a -> Handler a
+nt :: Env.Env -> AppM a -> Handler a
 nt s x = runReaderT x s
-

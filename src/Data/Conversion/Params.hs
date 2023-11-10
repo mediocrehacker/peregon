@@ -4,7 +4,7 @@ import Data.Aeson (FromJSON, ToJSON)
 
 data Params = Params
   { tex_file :: Text,
-    customization :: Text
+    customization :: Maybe (HashMap Text Text)
   }
   deriving stock (Eq, Show,Generic)
 
