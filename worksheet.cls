@@ -1,31 +1,46 @@
-\ProvidesClass{worksheet}[2023/10/01 Worksheet Latex class]
+\ProvidesClass{worksheet}[2023/11/08 Worksheet Latex class]
 \NeedsTeXFormat{LaTeX2e}
 
-\LoadClass[12pt]{article}
+\LoadClass[12pt]{scrartcl}
 
 \RequirePackage{tabularx}
 \RequirePackage[T2A]{fontenc}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[english,russian]{babel}
 \RequirePackage{paratype}
+\RequirePackage{parskip}
 \RequirePackage{geometry}
-\RequirePackage{fancyhdr}
 \RequirePackage{color}
 \RequirePackage{pbox}
+\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{calc}
+\RequirePackage{framed}
+\RequirePackage{background}
+\RequirePackage{changepage}
+\RequirePackage{tcolorbox}
+\RequirePackage{tikz}
 
 \author{Mental Desk}
 
 \renewcommand{\familydefault}{\sfdefault}
 
-\geometry{ a4paper, landscape, lmargin=32pt, rmargin=32pt, bmargin=48pt, tmargin=48pt}
+\geometry{ a4paper, lmargin=0.6cm, rmargin=0.6cm, bmargin=0.6cm, tmargin=0.7cm}
 
-\fancyhf{}
-\pagestyle{fancy}
+\backgroundsetup{scale = 1, angle = 0, opacity = 1,
+contents = {\includegraphics[width = \paperwidth,
+height = \paperheight, keepaspectratio] {background.pdf}}}
 
-\newcommand{\CustomHeader}[1]{\fancyhead[L]{\textbf{#1}}}
-
-\fancyfoot[L]{Предоставлено \textbf{MentalDesk}}
-\fancyfoot[R]{\footnotesize{© 2023 MentalDesk.ru}}
+\makeatletter
+\newcommand{\DrawLine}{%
+  \begin{tikzpicture}
+  \path[use as bounding box] (0,0) -- (\linewidth,0);
+  \draw[color=black!75!black,dashed,dash phase=2pt]
+        (0-\kvtcb@leftlower-\kvtcb@boxsep,0)--
+        (\linewidth+\kvtcb@rightlower+\kvtcb@boxsep,0);
+  \end{tikzpicture}%
+  }
+\makeatother
 
 
 % Colors

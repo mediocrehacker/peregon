@@ -12,7 +12,7 @@ GET http://localhost:8081/api/v1/healthcheck
 POST http://localhost:8081/api/v1/conversion
 Content-Type: application/json
 { "name": "Worksheet"
-, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/bolevoj-dnevnik/worksheet.tex"
+, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
 , "customization": "{}"
 }
 
