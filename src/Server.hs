@@ -50,6 +50,7 @@ postConversion params = do
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
+      _ <- liftIO $ putStrLn $ show $ CP.customization params
       fileName <- liftIO $ conversion (encodeUtf8 tex)
       return (RespSuccess (CR.Response fileName))
 

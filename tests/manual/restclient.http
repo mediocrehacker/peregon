@@ -13,7 +13,7 @@ POST http://localhost:8081/api/v1/conversion
 Content-Type: application/json
 { "name": "Worksheet"
 , "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
-, "customization": "{}"
+, "customization": { "key": "value"}
 }
 
 #
