@@ -20,14 +20,15 @@
       perSystem = { self', system, lib, config, pkgs, ... }:
       let
         tex = (pkgs.texlive.combine {
-          inherit (pkgs.texlive) scheme-full babel xetex setspace fontspec
-                                 chktex enumitem xifthen ifmtarg filehook
-                                 upquote tools ms geometry graphics oberdiek
-                                 fancyhdr lastpage xcolor etoolbox unicode-math
-                                 ucharcat sourcesanspro tcolorbox pgf environ
-                                 trimspaces parskip hyperref url euenc
-                                 collection-fontsrecommended ragged2e
-                                 framed paralist titlesec paratype inter;
+          inherit (pkgs.texlive) scheme-minimal babel xetex setspace fontspec;
+          # inherit (pkgs.texlive) scheme-full babel xetex setspace fontspec
+          #                        chktex enumitem xifthen ifmtarg filehook
+          #                        upquote tools ms geometry graphics oberdiek
+          #                        fancyhdr lastpage xcolor etoolbox unicode-math
+          #                        ucharcat sourcesanspro tcolorbox pgf environ
+          #                        trimspaces parskip hyperref url euenc
+          #                        collection-fontsrecommended ragged2e
+          #                        framed paralist titlesec paratype inter;
           }
         );
       in
@@ -91,8 +92,27 @@
         };
 
         # Default package & app.
-        packages.default = self'.packages.peregon;
-        apps.default = self'.apps.peregon;
+        packages.default = pkgs.haskell.lib.justStaticExecutables self'.packages.peregon;
+        # docker load -i $(nix build .#dockerImage --print-out-paths)
+        # docker run -v /etc/ssl:/etc/ssl -p 127.0.0.1:8081:8081 peregon
+        packages.dockerImage = pkgs.dockerTools.buildImage {
+          name = "peregon";
+          tag = "latest";
+          # created = "now";
+          copyToRoot = pkgs.buildEnv {
+            name = "peregon-root";
+            paths = with pkgs; [
+              coreutils
+              bash
+            ];
+            pathsToLink = [ "/bin" "/tmp" "/static" "/texmf"];
+          };
+          config = {
+            # WorkingDir = "/data";
+            Cmd = [ "${pkgs.lib.getExe self'.packages.default}" ];
+            ExposedPorts = { "8081/tcp" = { }; };
+          };
+        };
 
         # Default shell.
         devShells.default = pkgs.mkShell {

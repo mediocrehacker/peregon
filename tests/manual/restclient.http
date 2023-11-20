@@ -4,12 +4,12 @@
 # Convert to pdf
 #
 
-GET http://localhost:8081/api/v1/healthcheck
+GET http://127.0.0.1:8081/api/v1/healthcheck
 
 #
 # Convert to pdf
 #
-POST http://localhost:8081/api/v1/conversion
+POST http://127.0.0.1:8081/api/v1/conversion
 Content-Type: application/json
 { "name": "Worksheet"
 , "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
@@ -26,4 +26,6 @@ Content-Type: application/json
 # Convert to pdf
 #
 
-GET http://localhost:8081/api/v1/static/5fea29a1a384d363c27f18895a0fae69e07142ce700d6a50a1de83aa02eaa0b2.pdf
+# GET http://localhost:8081/api/v1/static/5fea29a1a384d363c27f18895a0fae69e07142ce700d6a50a1de83aa02eaa0b2.pdf
+
+GET http://127.0.0.1:8081/api/v1/static/5c6ad0226d428aa19c743303bba5acdeeec6862e5fbfefb3e59f0486335d1889f.pdf
