@@ -1,18 +1,26 @@
 # -*- restclient -*-
 
 #
-# Convert to pdf
+# Helthcheck
 #
 
 GET http://127.0.0.1:8081/api/v1/healthcheck
+
+#
+# Add documentclass
+#
+POST http://127.0.0.1:8081/api/v1/documentclass
+Content-Type: application/json
+{ "file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.cls"
+}
 
 #
 # Convert to pdf
 #
 POST http://127.0.0.1:8081/api/v1/conversion
 Content-Type: application/json
-{ "name": "Worksheet"
-, "tex_file": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
+{ "cls": "27742bb317dffe1fece3003ec7b2fe8ce0c66b8b62dbf1bcbc19ec90c26bc235"
+, "tex": "https://raw.githubusercontent.com/mediocrehacker/mentaldesk/main/src/app/content/worksheets/povedencheskij-ehksperiment-list/worksheet.tex"
 , "customization":
   { "clinicName": "Название Вашей Клиники",
     "therapist": "Фамилия Имя Специалиста",
@@ -28,4 +36,4 @@ Content-Type: application/json
 
 # GET http://localhost:8081/api/v1/static/5fea29a1a384d363c27f18895a0fae69e07142ce700d6a50a1de83aa02eaa0b2.pdf
 
-GET http://127.0.0.1:8081/api/v1/static/5c6ad0226d428aa19c743303bba5acdeeec6862e5fbfefb3e59f0486335d1889f.pdf
+GET http://127.0.0.1:8081/api/v1/static/59e58cf71b521e5af998ed84805d101a2a810b6158f29b62e9130d8b41c634a3e.pdf

@@ -1,11 +1,9 @@
-module Data.Conversion.Params where
+module Data.Documentclass.Params where
 
 import Data.Aeson (FromJSON, ToJSON)
 
 data Params = Params
-  { cls :: Maybe Text,
-    tex :: Text,
-    customization :: Maybe (HashMap Text Text)
+  { file :: Text
   }
   deriving stock (Eq, Show,Generic)
 

@@ -1,22 +1,24 @@
 module Server where
 
-import qualified Crypto.Hash.SHA256 as SHA256
-import Data.Aeson 
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Base16 as Base16
-import qualified Data.Conversion.Params as CP
-import qualified Data.Conversion.Response as CR
-import qualified Data.Env as Env
-import qualified Data.Text as T
-import qualified Query as Query
+import Crypto.Hash.SHA256 qualified as SHA256
+import Data.Aeson
+import Data.ByteString.Base16 qualified as Base16
+import Data.Conversion.Params qualified as CP
+import Data.Conversion.Response qualified as CR
+import Data.Documentclass.Params qualified as DP
+import Data.Documentclass.Response qualified as DR
+import Data.Env qualified as Env
+import Data.Text qualified as T
+import Query qualified as Query
 import Relude.Extra.Map (toPairs)
 import Servant
-import qualified System.Process as Process
+import System.Process qualified as Process
 
 type API =
   "api" :> "v1"
     :> ( "healthcheck" :> Get '[JSON] Healthcheck
            :<|> "conversion" :> ReqBody '[JSON] CP.Params :> Post '[JSON] (Response CR.Response)
+           :<|> "documentclass" :> ReqBody '[JSON] DP.Params :> Post '[JSON] (Response DR.Response)
        )
 
 type StaticAPI = "api" :> "v1" :> "static" :> Raw
@@ -35,6 +37,8 @@ data Response a
 
 instance ToJSON (Response CR.Response)
 
+instance ToJSON (Response DR.Response)
+
 healthcheckUp :: Healthcheck
 healthcheckUp =
   Healthcheck "UP"
@@ -43,37 +47,69 @@ getHealthcheck :: AppM Healthcheck
 getHealthcheck =
   return healthcheckUp
 
+postDocumentclass :: DP.Params -> AppM (Response DR.Response)
+postDocumentclass params = do
+  texResp <- liftIO $ Query.get $ DP.file params
+  case texResp of
+    Left err ->
+      return $ RespFailure $ T.pack $ "Error: " ++ show err
+    Right tex -> do
+      fileName <- liftIO $ storeCls $ encodeUtf8 tex
+      return $ RespSuccess $ DR.Response fileName
+
+storeCls :: ByteString -> IO (Text)
+storeCls tex = do
+  _ <- writeFileBS ("static/" ++ T.unpack fileName) tex
+  return fileName
+  where
+    fileName =
+      T.append (hash tex) ".cls"
+
+hash :: ByteString -> Text
+hash =
+  decodeUtf8 . Base16.encode . SHA256.hash
+
 postConversion :: CP.Params -> AppM (Response CR.Response)
 postConversion params = do
-  texResp <- liftIO $ Query.get $ CP.tex_file params
+  texResp <- liftIO $ Query.get $ CP.tex params
   case texResp of
     Left err ->
       return (RespFailure $ T.pack ("Error: " ++ show err))
     Right tex -> do
-      fileName <- liftIO $ conversion tex $ CP.customization params
+      fileName <- liftIO $ conversion tex params
       return (RespSuccess (CR.Response fileName))
 
-conversion :: Text -> Maybe (HashMap Text Text) -> IO (Text)
-conversion tex =
-  pdfLatex . encodeUtf8 . foldr convert tex . fromMaybe [] . fmap toPairs
+conversion :: Text -> CP.Params -> IO (Text)
+conversion tex params =
+  pdfLatex $ encodeUtf8 $ conversionTex tex (CP.cls params) (CP.customization params)
 
-pdfLatex :: ByteString-> IO (Text)
+conversionTex :: Text -> Maybe Text -> Maybe (HashMap Text Text) -> Text
+conversionTex tex cls =
+  customization tex_
+  where
+    tex_ = maybe tex (addDocumentclass tex) cls
+
+addDocumentclass :: Text -> Text -> Text
+addDocumentclass tex cls =
+  T.replace "\\documentclass{worksheet}" (T.append (T.append "\\documentclass{" cls) "}") tex
+
+customization :: Text -> Maybe (HashMap Text Text) -> Text
+customization tex =
+  foldr convert tex . fromMaybe [] . fmap toPairs
+
+pdfLatex :: ByteString -> IO (Text)
 pdfLatex tex = do
   _ <- writeFileBS filePath tex
   _ <- Process.spawnProcess "pdflatex" ["-output-directory=./static/", filePath]
-  return (T.pack fileName)
+  -- xelatex -file-line-error -interaction=nonstopmode -output-directory=./static/ tmp/63bfce1046dc7c8a3f3a5cdba1a5997514eb2493356e1b8a7d88be8daf49c581.tex
+  -- pdflatex -file-line-error -interaction=nonstopmode -output-directory=./static/ tmp/63bfce1046dc7c8a3f3a5cdba1a5997514eb2493356e1b8a7d88be8daf49c581.tex
+  return fileName
   where
-    hash :: BS.ByteString
-    hash =
-      Base16.encode $ SHA256.hash tex
-
-    fileName :: String
     fileName =
-      (T.unpack $ decodeUtf8 hash) ++ ".tex"
+      T.append (hash tex) ".tex"
 
-    filePath :: String
     filePath =
-      "tmp/" ++ fileName
+      "tmp/" ++ T.unpack fileName
 
 convert :: (Text, Text) -> Text -> Text
 convert (key, value) =
@@ -95,6 +131,7 @@ server :: ServerT API AppM
 server =
   getHealthcheck
     :<|> postConversion
+    :<|> postDocumentclass
 
 allApi :: Proxy (API :<|> StaticAPI)
 allApi = Proxy

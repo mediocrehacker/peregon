@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  backend:
+    image: peregon
+    ports:
+      - 8081:8081
+    volumes:
+      - ./static:/static
+      - /etc/ssl:/etc/ssl

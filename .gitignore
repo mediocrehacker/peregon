@@ -17,3 +17,4 @@ result-*
 
 # tmp
 tmp/*.tex
+static/*.

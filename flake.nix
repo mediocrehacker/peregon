@@ -20,15 +20,18 @@
       perSystem = { self', system, lib, config, pkgs, ... }:
       let
         tex = (pkgs.texlive.combine {
-          inherit (pkgs.texlive) scheme-minimal babel xetex setspace fontspec;
-          # inherit (pkgs.texlive) scheme-full babel xetex setspace fontspec
-          #                        chktex enumitem xifthen ifmtarg filehook
-          #                        upquote tools ms geometry graphics oberdiek
-          #                        fancyhdr lastpage xcolor etoolbox unicode-math
-          #                        ucharcat sourcesanspro tcolorbox pgf environ
-          #                        trimspaces parskip hyperref url euenc
-          #                        collection-fontsrecommended ragged2e
-          #                        framed paralist titlesec paratype inter;
+          inherit (pkgs.texlive) scheme-small babel setspace fontspec
+            chktex enumitem xifthen ifmtarg filehook
+            upquote tools ms geometry graphics oberdiek
+            fancyhdr lastpage xcolor etoolbox unicode-math
+            ucharcat sourcesanspro tcolorbox pgf environ
+            trimspaces parskip hyperref url euenc
+            collection-fontsrecommended ragged2e
+            framed paralist titlesec paratype inter
+            koma-script pbox background xkeyval everypage
+            changepage cm-unicode xunicode collection-langcyrillic
+            lh lm
+          ;
           }
         );
       in
@@ -104,6 +107,7 @@
             paths = with pkgs; [
               coreutils
               bash
+              tex
             ];
             pathsToLink = [ "/bin" "/tmp" "/static" "/texmf"];
           };

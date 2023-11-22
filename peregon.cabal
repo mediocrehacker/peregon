@@ -110,6 +110,8 @@ library
                , Query
                , Data.Conversion.Params
                , Data.Conversion.Response
+               , Data.Documentclass.Params
+               , Data.Documentclass.Response
                , Data.Tex
 
 executable peregon
