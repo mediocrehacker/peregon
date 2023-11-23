@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   backend:
-    image: peregon
+    image: ghcr.io/mediocrehacker/peregon
     ports:
       - 8081:8081
     volumes:
