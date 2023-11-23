@@ -100,7 +100,7 @@
           # docker run -v /etc/ssl:/etc/ssl -p 127.0.0.1:8081:8081 peregon
           # docker images -a | grep none | awk '{ print $3; }' | xargs docker rmi --force
           packages.dockerImage = pkgs.dockerTools.buildImage {
-            name = "mediocrehacker/peregon";
+            name = "ghcr.io/mediocrehacker/peregon";
             tag = "dev";
             # tag = builtins.substring 0 9 (self.rev or "dev");
             created = "now";

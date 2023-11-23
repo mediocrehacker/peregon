@@ -24,3 +24,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: nix build .#dockerImage
+
+      - name: Push Docker Image
+        run: docker push ghcr.io/mediocrehacker/peregon:dev
+
+
