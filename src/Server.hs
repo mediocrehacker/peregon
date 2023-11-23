@@ -9,16 +9,17 @@ import Data.Documentclass.Params qualified as DP
 import Data.Documentclass.Response qualified as DR
 import Data.Env qualified as Env
 import Data.Text qualified as T
-import Query qualified as Query
+import Query qualified
 import Relude.Extra.Map (toPairs)
 import Servant
 import System.Process qualified as Process
 
 type API =
-  "api" :> "v1"
+  "api"
+    :> "v1"
     :> ( "healthcheck" :> Get '[JSON] Healthcheck
-           :<|> "conversion" :> ReqBody '[JSON] CP.Params :> Post '[JSON] (Response CR.Response)
-           :<|> "documentclass" :> ReqBody '[JSON] DP.Params :> Post '[JSON] (Response DR.Response)
+          :<|> "conversion" :> ReqBody '[JSON] CP.Params :> Post '[JSON] (Response CR.Response)
+          :<|> "documentclass" :> ReqBody '[JSON] DP.Params :> Post '[JSON] (Response DR.Response)
        )
 
 type StaticAPI = "api" :> "v1" :> "static" :> Raw
@@ -52,14 +53,14 @@ postDocumentclass params = do
   texResp <- liftIO $ Query.get $ DP.file params
   case texResp of
     Left err ->
-      return $ RespFailure $ T.pack $ "Error: " ++ show err
+      return $ RespFailure $ toText $ "Error: " ++ show err
     Right tex -> do
       fileName <- liftIO $ storeCls $ encodeUtf8 tex
       return $ RespSuccess $ DR.Response fileName
 
-storeCls :: ByteString -> IO (Text)
+storeCls :: ByteString -> IO Text
 storeCls tex = do
-  _ <- writeFileBS ("static/" ++ T.unpack fileName) tex
+  _ <- writeFileBS ("static/" ++ toString fileName) tex
   return fileName
   where
     fileName =
@@ -74,12 +75,12 @@ postConversion params = do
   texResp <- liftIO $ Query.get $ CP.tex params
   case texResp of
     Left err ->
-      return (RespFailure $ T.pack ("Error: " ++ show err))
+      return (RespFailure $ toText ("Error: " ++ show err))
     Right tex -> do
       fileName <- liftIO $ conversion tex params
       return (RespSuccess (CR.Response fileName))
 
-conversion :: Text -> CP.Params -> IO (Text)
+conversion :: Text -> CP.Params -> IO Text
 conversion tex params =
   pdfLatex $ encodeUtf8 $ conversionTex tex (CP.cls params) (CP.customization params)
 
@@ -95,9 +96,9 @@ addDocumentclass tex cls =
 
 customization :: Text -> Maybe (HashMap Text Text) -> Text
 customization tex =
-  foldr convert tex . fromMaybe [] . fmap toPairs
+  foldr convert tex . maybe [] toPairs
 
-pdfLatex :: ByteString -> IO (Text)
+pdfLatex :: ByteString -> IO Text
 pdfLatex tex = do
   _ <- writeFileBS filePath tex
   _ <- Process.spawnProcess "pdflatex" ["-output-directory=./static/", filePath]
@@ -109,7 +110,7 @@ pdfLatex tex = do
       T.append (hash tex) ".tex"
 
     filePath =
-      "tmp/" ++ T.unpack fileName
+      "tmp/" ++ toString fileName
 
 convert :: (Text, Text) -> Text -> Text
 convert (key, value) =

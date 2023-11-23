@@ -10,8 +10,7 @@ get :: Text -> IO (Either ClientError Tex)
 get url = do
   manager' <- newManager tlsManagerSettings
   burl <- parseBaseUrl (toString url)
-  res <- runClientM queries (mkClientEnv manager' burl)
-  return res
+  runClientM queries (mkClientEnv manager' burl)
 
 type API = Get '[PlainText] Tex
 
@@ -21,7 +20,6 @@ api = Proxy
 tex :: ClientM Tex
 tex = client api
 
-queries :: ClientM (Tex)
+queries :: ClientM Tex
 queries = do
-  tex' <- tex
-  return (tex')
+  tex

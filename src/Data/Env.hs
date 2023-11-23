@@ -5,5 +5,4 @@ newtype Env = Env
   }
 
 init :: Text -> Env
-init txt =
-  Env txt
+init = Env

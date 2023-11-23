@@ -77,8 +77,9 @@ common shared
   build-depends:
     , aeson
     , async
-    , base          >=4.13.0.0 && <4.18.0.0.0
+    , base               >=4.13.0.0 && <4.18.0.0.0
     , base16-bytestring
+    , cryptohash-sha256
     , data-default
     , directory
     , filepath
@@ -89,11 +90,10 @@ common shared
     , optics-core
     , process
     , profunctors
-    , relude        >=1.0
+    , relude             >=1.0
     , servant
-    , servant-server
     , servant-client
-    , cryptohash-sha256 
+    , servant-server
     , shower
     , time
     , wai
@@ -104,15 +104,16 @@ common shared
   default-language:   Haskell2010
 
 library
-  import:  shared
+  import:          shared
   exposed-modules: Server
-  other-modules: Data.Env
-               , Query
-               , Data.Conversion.Params
-               , Data.Conversion.Response
-               , Data.Documentclass.Params
-               , Data.Documentclass.Response
-               , Data.Tex
+  other-modules:
+    Data.Conversion.Params
+    Data.Conversion.Response
+    Data.Documentclass.Params
+    Data.Documentclass.Response
+    Data.Env
+    Data.Tex
+    Query
 
 executable peregon
   import:  shared

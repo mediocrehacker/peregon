@@ -2,11 +2,11 @@ module Data.Documentclass.Response where
 
 import Data.Aeson (FromJSON, ToJSON)
 
-data Response = Response 
+newtype Response = Response
   { fileName :: Text
   }
-  deriving stock (Eq, Show,Generic)
+  deriving stock (Eq, Show, Generic)
 
-instance FromJSON Response 
+instance FromJSON Response
 
-instance ToJSON Response 
+instance ToJSON Response
